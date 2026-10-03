@@ -66,7 +66,7 @@ poweredu-platform/
 │   │   └── cases.py         内置算例库
 │   └── static/              前端单页应用（原生 JS + SVG）
 ├── tests/                   unittest 测试（79 项）
-├── docs/                    方案说明书与实施计划
+├── docs/                    方案说明书与部署指南
 ├── start.bat / start.sh     一键启动
 └── requirements.txt         说明：无需第三方依赖
 ```
