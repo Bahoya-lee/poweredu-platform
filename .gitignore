@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行期数据（含账号口令散列与操作日志，不应入库）
+*.db
+*.db-wal
+*.db-shm
+
+# 本地临时文件
+*.log
+*.bak
+*~
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.idea/
+.vscode/

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电真万确 · AI 赋能电力教学仿真平台</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⚡</span>
+      <div>
+        <h1>电真万确</h1>
+        <p>AI 赋能电力教学仿真软件平台</p>
+      </div>
+    </div>
+    <nav class="tabs" id="mainTabs">
+      <button class="tab active" data-view="workbench">仿真工作台</button>
+      <button class="tab" data-view="labs">我的实验</button>
+      <button class="tab" data-view="console">教学控制台</button>
+      <button class="tab" data-view="about">平台说明</button>
+    </nav>
+    <div class="userbox" id="userbox">
+      <span class="badge" id="roleBadge">未登录</span>
+      <span id="userName">—</span>
+      <button class="ghost" id="logoutBtn" hidden>退出</button>
+    </div>
+  </header>
+
+  <!-- 登录 -->
+  <section class="view login-view" id="view-login">
+    <div class="login-card">
+      <h2>欢迎使用电真万确平台</h2>
+      <p class="muted">国产自主电力仿真内核 · 浏览器直接使用 · 无需安装任何商业软件</p>
+      <label>账号</label>
+      <input id="loginUser" value="student01" autocomplete="username">
+      <label>口令</label>
+      <input id="loginPass" type="password" value="PowerEdu@2026" autocomplete="current-password">
+      <button class="primary block" id="loginBtn">登录</button>
+      <p class="error" id="loginError"></p>
+      <div class="hint">
+        <strong>演示账号</strong>（口令均为 PowerEdu@2026）
+        <ul>
+          <li>student01 · 学生端：做实验、提交报告</li>
+          <li>teacher01 · 教师端：建课、发任务、看成绩</li>
+          <li>admin · 管理员：平台统计</li>
+        </ul>
+      </div>
+    </div>
+    <div class="login-features">
+      <div class="feature"><span>🔧</span><h3>自主仿真内核</h3><p>牛顿-拉夫逊潮流、节点阻抗法短路、RK4 暂态稳定，全部自研。</p></div>
+      <div class="feature"><span>🧠</span><h3>AI 助教</h3><p>自然语言改算例、结果诊断、实验报告一键起草。</p></div>
+      <div class="feature"><span>🎓</span><h3>教学过程管理</h3><p>课程、实验任务、自动评分、成绩导出，服务全校师生。</p></div>
+      <div class="feature"><span>🛡️</span><h3>合规免授权</h3><p>零客户端、零许可证，规避盗版软件风险。</p></div>
+    </div>
+  </section>
+
+  <!-- 工作台 -->
+  <section class="view" id="view-workbench" hidden>
+    <aside class="panel sidebar">
+      <h2>算例库</h2>
+      <div id="caseList" class="case-list"></div>
+      <h2>仿真类型</h2>
+      <div class="stack">
+        <button class="primary" id="runPowerFlow">潮流计算</button>
+        <button id="runShortCircuit">三相短路</button>
+        <button id="runStability">暂态稳定</button>
+        <button id="runCCT">极限切除时间</button>
+      </div>
+      <div class="options">
+        <label>故障母线 <input id="faultBus" type="number" min="1" value="7"></label>
+        <label>切除线路 <input id="tripBranch" value="6-7"></label>
+        <label>切除时间 (s) <input id="clearingTime" type="number" step="0.01" value="0.15"></label>
+      </div>
+      <div class="stack">
+        <button class="ghost" id="saveCase">另存为自定义算例</button>
+        <button class="ghost" id="resetCase">恢复算例原始参数</button>
+        <button class="ghost" id="exportReport">生成实验报告</button>
+      </div>
+    </aside>
+
+    <main class="panel canvas-panel">
+      <div class="panel-head">
+        <h2 id="caseTitle">请选择算例</h2>
+        <div class="panel-head-actions">
+          <span class="pill" id="caseMeta">—</span>
+          <span class="pill" id="runStatus">待计算</span>
+        </div>
+      </div>
+      <div class="diagram-wrap">
+        <svg id="diagram" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legend">
+          <span><i class="dot slack"></i>平衡节点</span>
+          <span><i class="dot pv"></i>PV 节点</span>
+          <span><i class="dot pq"></i>PQ 节点</span>
+          <span><i class="line-legend"></i>支路（箭头为有功流向）</span>
+        </div>
+      </div>
+      <div class="subtabs" id="resultTabs">
+        <button class="subtab active" data-panel="panel-powerflow">潮流结果</button>
+        <button class="subtab" data-panel="panel-shortcircuit">短路结果</button>
+        <button class="subtab" data-panel="panel-stability">稳定分析</button>
+        <button class="subtab" data-panel="panel-tables">元件参数</button>
+      </div>
+      <div class="result-body">
+        <div class="sub-panel active" id="panel-powerflow">
+          <div class="chart-row">
+            <div class="chart-box"><h3>迭代收敛过程</h3><svg id="chartConvergence" viewBox="0 0 320 180"></svg></div>
+            <div class="chart-box"><h3>支路负载率 (%)</h3><svg id="chartLoading" viewBox="0 0 320 180"></svg></div>
+          </div>
+          <div class="table-wrap"><table id="busResultTable"></table></div>
+          <div class="table-wrap"><table id="branchResultTable"></table></div>
+        </div>
+        <div class="sub-panel" id="panel-shortcircuit">
+          <div class="chart-box wide"><h3>各母线三相短路电流 (kA)</h3><svg id="chartShortCircuit" viewBox="0 0 640 200"></svg></div>
+          <div class="table-wrap"><table id="shortCircuitTable"></table></div>
+        </div>
+        <div class="sub-panel" id="panel-stability">
+          <div class="chart-box wide"><h3>发电机功角摇摆曲线</h3><svg id="chartStability" viewBox="0 0 640 240"></svg></div>
+          <div class="chart-box wide"><h3>转速偏差曲线</h3><svg id="chartOmega" viewBox="0 0 640 200"></svg></div>
+          <p class="stable-verdict" id="stableVerdict"></p>
+        </div>
+        <div class="sub-panel" id="panel-tables">
+          <div class="table-wrap"><h3>母线参数（可编辑）</h3><table id="busEditTable"></table></div>
+          <div class="table-wrap"><h3>支路参数（可编辑）</h3><table id="branchEditTable"></table></div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel ai-panel">
+      <h2>AI 助教 <span class="pill" id="llmBadge">本地规则引擎</span></h2>
+      <div class="diagnosis" id="diagnosis"></div>
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="例如：把5号母线负荷增加到120兆瓦">
+        <button class="primary" id="chatSend">发送</button>
+      </div>
+      <div class="quick-actions" id="quickActions">
+        <button data-text="把5号母线负荷增加到120兆瓦">加负荷</button>
+        <button data-text="断开6-7线路">断线路</button>
+        <button data-text="全网负荷降低10%">降负荷10%</button>
+        <button data-text="为什么最低电压偏低">电压诊断</button>
+      </div>
+    </aside>
+  </section>
+
+  <!-- 我的实验 -->
+  <section class="view" id="view-labs" hidden>
+    <div class="panel">
+      <div class="panel-head"><h2>实验任务</h2><span class="pill" id="labMeta"></span></div>
+      <div class="task-grid" id="taskGrid"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>我的提交记录</h2></div>
+      <div class="table-wrap"><table id="mySubmissions"></table></div>
+    </div>
+  </section>
+
+  <!-- 教学控制台 -->
+  <section class="view" id="view-console" hidden>
+    <div class="stat-grid" id="statGrid"></div>
+    <div class="panel">
+      <div class="panel-head"><h2>发布实验任务</h2></div>
+      <div class="form-grid">
+        <label>课程 <select id="courseSelect"></select></label>
+        <label>任务名称 <input id="taskTitle" placeholder="实验四：……"></label>
+        <label>算例 <select id="taskCase"></select></label>
+        <label>截止日期 <input id="taskDeadline" type="date"></label>
+        <label>最低电压 (p.u.) <input id="taskMinVm" type="number" step="0.01" value="0.95"></label>
+        <label>最高电压 (p.u.) <input id="taskMaxVm" type="number" step="0.01" value="1.05"></label>
+        <label>最大负载率 (%) <input id="taskMaxLoad" type="number" step="1" value="100"></label>
+        <label class="wide">实验要求 <textarea id="taskReq" rows="3"></textarea></label>
+      </div>
+      <button class="primary" id="createTaskBtn">发布任务</button>
+      <p class="hint-line" id="consoleMsg"></p>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>提交与成绩</h2><button class="ghost" id="exportCsv">导出成绩 CSV</button></div>
+      <div class="table-wrap"><table id="allSubmissions"></table></div>
+    </div>
+  </section>
+
+  <!-- 平台说明 -->
+  <section class="view about-view" id="view-about" hidden>
+    <div class="panel">
+      <h2>电真万确 · AI 赋能电力教学仿真平台</h2>
+      <p>面向武汉大学电气与自动化学院以及全校师生开放的电力系统教学仿真平台，由国产自主仿真内核、AI 助教、教学工作台三部分组成。</p>
+      <h3>一、自主仿真内核</h3>
+      <ul>
+        <li>潮流计算：极坐标牛顿-拉夫逊法，支持 PV/PQ/平衡节点、变压器非标准变比、无功限值校验。</li>
+        <li>短路计算：节点阻抗矩阵法三相短路，输出各母线短路电流与电压跌落分布。</li>
+        <li>暂态稳定：经典二阶模型 + 四阶龙格-库塔时域仿真，Kron 降阶到发电机内节点，二分法求极限切除时间。</li>
+      </ul>
+      <h3>二、AI 助教</h3>
+      <ul>
+        <li>自然语言修改算例：负荷、出力、电压设定值、线路投切、变压器变比。</li>
+        <li>结果诊断：电压越限、线路过载、相角差过大、无功越限、网损分析。</li>
+        <li>一键生成实验报告草稿；配置大模型密钥后可自由问答。</li>
+      </ul>
+      <h3>三、教学服务</h3>
+      <ul>
+        <li>教师端：建课、发布实验任务、设定评分标准、查看成绩并导出。</li>
+        <li>学生端：在线做实验、提交结果、自动评分与批语。</li>
+      </ul>
+      <h3>四、部署与合规</h3>
+      <ul>
+        <li>纯 Python 标准库实现，零第三方依赖、零客户端安装、零商业授权。</li>
+        <li>默认仅本机运行（只监听 127.0.0.1，不开放端口）；一条命令启动：<code>python -m server.app --port 8000</code>。</li>
+        <li>要服务全班/全校时，把平台部署到一台固定服务器，再通过反向代理发布，不要依赖个人电脑共享。</li>
+      </ul>
+      <p class="muted">版本 1.0.0 · 数据保存在本机 SQLite 数据库，不上传外网。</p>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="/charts.js"></script>
+  <script src="/netdiagram.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
